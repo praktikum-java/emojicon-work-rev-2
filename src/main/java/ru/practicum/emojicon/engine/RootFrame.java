@@ -1,7 +1,6 @@
 package ru.practicum.emojicon.engine;
 
 import com.googlecode.lanterna.TextCharacter;
-import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.screen.Screen;
 import com.vdurmont.emoji.Emoji;
 
@@ -15,9 +14,13 @@ public class RootFrame extends AbstractFrame {
         this.screen = screen;
     }
 
+    public static RootFrame extend(Frame frame) {
+        return (RootFrame) frame.getRoot();
+    }
+
     //set position for painting
-    public void setPosition(int x, int y){
-        if(x < 0 || x > getRight() || y < 0 || y > getBottom())
+    public void setPosition(int x, int y) {
+        if (x < 0 || x > getRight() || y < 0 || y > getBottom())
             throw new IllegalArgumentException("position out of bounds");
 
         setPosX(x);
@@ -53,4 +56,7 @@ public class RootFrame extends AbstractFrame {
         return this;
     }
 
+    public Screen getScreen() {
+        return screen;
+    }
 }

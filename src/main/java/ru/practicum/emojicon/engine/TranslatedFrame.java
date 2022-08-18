@@ -3,7 +3,6 @@ package ru.practicum.emojicon.engine;
 import com.googlecode.lanterna.TextColor;
 import com.vdurmont.emoji.Emoji;
 
-//фрейм для изолированного рисования объектов, пока наследуем от Frame.
 public class TranslatedFrame extends AbstractFrame {
 
     private final Frame rootFrame;
@@ -78,8 +77,7 @@ public class TranslatedFrame extends AbstractFrame {
     }
 
     @Override
-    public void setTransparentColor(TextColor color) {
-        super.setTransparentColor(color);
-        rootFrame.setTransparentColor(color);
+    public TextColor getTransparentColor() {
+        return rootFrame.getTransparentColor();
     }
 }

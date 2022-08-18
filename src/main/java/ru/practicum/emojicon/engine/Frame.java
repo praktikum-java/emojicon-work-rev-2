@@ -21,8 +21,6 @@ public interface Frame extends Boxed {
 
     void setColor(TextColor color);
 
-    void setTransparentColor(TextColor color);
-
     Point paint();
 
     Point draw(Character character);

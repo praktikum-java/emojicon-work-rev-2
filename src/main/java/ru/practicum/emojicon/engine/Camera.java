@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class Camera {
 
-    private Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Engine engine;
 
@@ -108,6 +108,18 @@ public class Camera {
         } else {
             throw new IllegalArgumentException();
             //TODO разобраться с множественными выбранными объектами если такие будут
+        }
+    }
+
+    public void showSelection(Controller controller) {
+        List<UUID> selectedIds = controller.getSelection();
+        if (selectedIds.size() == 1) {
+            engine.findEntity(selectedIds.get(0)).filter(e -> e instanceof Boxed).map(e -> (Boxed) e).ifPresent(box -> {
+                int nextLeft = Math.max(0, box.getLeft() - 10);
+                int nextTop = Math.max(0, box.getTop() - 10);
+                this.dx = nextLeft;
+                this.dy = nextTop;
+            });
         }
     }
 }

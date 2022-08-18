@@ -5,19 +5,27 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.screen.Screen;
 import com.vdurmont.emoji.Emoji;
 
+import java.util.function.BiFunction;
+
 //корневой фрейм работает с устройством, всегда рисует от 0 до края консоли
 public class RootFrame extends AbstractFrame {
 
     Screen screen;
+    private BiFunction<Integer, Integer, TextColor> transparentColorFn;
 
     public RootFrame(Screen screen, int right, int bottom) {
         super(0, 0, right, bottom);
         this.screen = screen;
     }
 
+    @Override
+    public TextColor getTransparentColor() {
+        return transparentColorFn != null ? transparentColorFn.apply(getPosX(), getPosY()) : TextColor.ANSI.BLACK;
+    }
+
     //set position for painting
-    public void setPosition(int x, int y){
-        if(x < 0 || x > getRight() || y < 0 || y > getBottom())
+    public void setPosition(int x, int y) {
+        if (x < 0 || x > getRight() || y < 0 || y > getBottom())
             throw new IllegalArgumentException("position out of bounds");
 
         setPosX(x);
@@ -53,4 +61,7 @@ public class RootFrame extends AbstractFrame {
         return this;
     }
 
+    public void setTransparentColorFn(BiFunction<Integer, Integer, TextColor> transparentColorFn) {
+        this.transparentColorFn = transparentColorFn;
+    }
 }

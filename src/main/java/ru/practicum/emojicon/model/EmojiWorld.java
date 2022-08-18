@@ -1,38 +1,32 @@
 package ru.practicum.emojicon.model;
 
-import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.practicum.emojicon.engine.*;
+import ru.practicum.emojicon.model.landscape.EmojiWorldLandscape;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class EmojiWorld extends EmojiObject implements EntityResolver, EmojiObjectHolder, Controller {
 
-    private Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private List<EmojiWorldObject> objects = new ArrayList<>();
+    private final List<EmojiWorldObject> objects = new ArrayList<>();
     private UUID selection = null;
-    private List<List<Byte>> landscape;
+    private EmojiWorldLandscape landscape;
 
     public EmojiWorld(){
         this.initEarth(2048, 2048);
         log.info("world created");
     }
 
+
     private void initEarth(int width, int height) {
         this.setWidth(width);
         this.setHeight(height);
-        List<List<Byte>> hMap = new ArrayList<>();
-        for(int x = 0; x<width; x++){
-            List<Byte> hRow = new ArrayList<>();
-            for(int y = 0; y < height; y++){
-                hRow.add((byte) 0);
-            }
-            hMap.add(hRow);
-        }
-        this.landscape = hMap;
+        this.landscape = new EmojiWorldLandscape(width, height);
     }
 
     @Override
@@ -42,21 +36,26 @@ public class EmojiWorld extends EmojiObject implements EntityResolver, EmojiObje
     }
 
     private void drawObjects(Frame frame) {
+        ((RootFrame) frame.getRoot()).setTransparentColorFn((x, y) -> {
+            int depth = landscape.getDepth(x + frame.getLeft(), y + frame.getTop());
+            return EmojiWorldLandscape.getLandscapeColor(depth);
+        });
         //отсекаем лишние объекты, которые точно не отобразятся
         objects.stream()
                 .filter(obj -> frame.getLeft() <= obj.getLeft() && frame.getRight() >= obj.getRight() && frame.getTop() <= obj.getTop() && frame.getBottom() >= obj.getBottom())
                 .forEach(obj -> {
-                    TranslatedFrame objFrame = new TranslatedFrame(frame, new Point(obj.getX(), obj.getY()));
-                    objFrame.setTransparentColor(TextColor.ANSI.BLACK_BRIGHT);
+                    Point dp = new Point(obj.getX(), obj.getY());
+                    TranslatedFrame objFrame = new TranslatedFrame(frame, dp);
                     obj.drawFrame(objFrame);
                 });
     }
 
     private void drawEarth(Frame frame) {
         for(int x = Math.max(0, frame.getLeft()); x <= Math.min(getWidth(), frame.getRight()); x++){
-            for (int y = Math.max(0, frame.getTop()); y <= Math.min(getHeight(), frame.getBottom()); y++){
+            for (int y = Math.max(0, frame.getTop()); y <= Math.min(getHeight(), frame.getBottom()); y++) {
                 frame.setPosition(x, y);
-                frame.setFillColor(TextColor.ANSI.BLACK_BRIGHT);
+                int depth = landscape.getDepth(x, y);
+                frame.setFillColor(EmojiWorldLandscape.getLandscapeColor(depth));
                 frame.paint();
             }
         }
@@ -71,7 +70,8 @@ public class EmojiWorld extends EmojiObject implements EntityResolver, EmojiObje
 
     @Override
     public boolean isFreeArea(int left, int top, int right, int bottom) {
-        return left >= 0 && top >=0 && right <= getWidth() && bottom <= getHeight(); // пока всё поле пустое
+        Set<Point> landscapeHardPoints = new Area(left, top, right, bottom).getCorners().stream().filter(p -> landscape.isWater(p) || landscape.isMountain(p)).collect(Collectors.toSet());
+        return left >= 0 && top >= 0 && right <= getWidth() && bottom <= getHeight() && landscapeHardPoints.isEmpty();
     }
 
     private void addWorldObject(EmojiWorldObject obj) {
@@ -118,11 +118,38 @@ public class EmojiWorld extends EmojiObject implements EntityResolver, EmojiObje
 
     @Override
     public List<UUID> getSelection() {
-        return selection != null ? Arrays.asList(selection) : Collections.emptyList();
+        return selection != null ? List.of(selection) : Collections.emptyList();
     }
 
     @Override
     public Optional<? extends Entity> findEntity(UUID uuid) {
         return objects.stream().filter(obj -> obj.getId().equals(uuid)).findFirst(); //TODO заменить на Map и поиск по ключу
+    }
+
+    public Area getFreeArea() {
+        Point lt = null;
+        Point rb = null;
+        while (lt == null) { //но может и зациклиться :)
+            int rx = (int) Math.round(Math.random() * getWidth());
+            int ry = (int) Math.round(Math.random() * getHeight());
+            lt = new Point(rx, ry);
+            if (landscape.isGrass(lt)) {
+                int square = 100;
+                while (lt != null && rb == null && square > 0) {
+                    rb = new Point(rx + square, ry + square);
+                    if ((landscape.isGrass(rb))) {
+                        return new Area(lt, rb);
+                    } else if (square > 1) {
+                        square--;
+                        rb = null;
+                    } else {
+                        lt = null;
+                    }
+                }
+            } else {
+                lt = null;
+            }
+        }
+        return null;
     }
 }

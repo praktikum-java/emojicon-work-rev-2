@@ -3,14 +3,13 @@ package ru.practicum.emojicon.engine;
 import com.googlecode.lanterna.TextColor;
 
 public abstract class AbstractFrame implements Frame {
-    private int left;
-    private int top;
-    private int right;
-    private int bottom;
+    private final int left;
+    private final int top;
+    private final int right;
+    private final int bottom;
 
     private int posX;
     private int posY;
-    private TextColor transparentColor;
     private TextColor fillColor;
     private TextColor color;
 
@@ -21,7 +20,7 @@ public abstract class AbstractFrame implements Frame {
         this.bottom = bottom;
         this.posX = 0;
         this.posY = 0;
-        this.transparentColor = this.fillColor = this.color = TextColor.ANSI.BLACK;
+        this.fillColor = this.color = TextColor.ANSI.BLACK;
     }
 
     public void setPosX(int posX) {
@@ -56,10 +55,6 @@ public abstract class AbstractFrame implements Frame {
         return posY;
     }
 
-    public TextColor getTransparentColor() {
-        return transparentColor;
-    }
-
     public TextColor getFillColor() {
         return fillColor;
     }
@@ -80,11 +75,5 @@ public abstract class AbstractFrame implements Frame {
     //set paint color
     public void setColor(TextColor color){
         this.color = color;
-    }
-
-    public void setTransparentColor(TextColor color){
-        if(this.transparentColor == null)
-            throw new IllegalArgumentException();
-        this.transparentColor = color;
     }
 }

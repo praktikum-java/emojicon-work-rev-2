@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.practicum.emojicon.engine.EmojiTicker;
 import ru.practicum.emojicon.engine.Engine;
-import ru.practicum.emojicon.engine.Point;
 import ru.practicum.emojicon.model.EmojiCat;
 import ru.practicum.emojicon.model.EmojiWorld;
 
@@ -30,7 +29,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         EmojiWorld world = new EmojiWorld();
-        UUID objectId = world.addObject(new EmojiCat("Tom"), new Point(1, 1));
+        UUID objectId = world.addObject(new EmojiCat("Tom"), world.getFreeArea().getCorners().get(0));
         world.setSelection(objectId);
         Engine engine = new Engine();
         engine.addRoot(world);

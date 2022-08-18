@@ -20,20 +20,20 @@ public class Engine implements Runnable, EntityResolver {
 
     //время одного кадра при частоте в 60 FPS
     private static final Long FRAME_TIME = 1000L / 60;
-    private Terminal terminal;
-    private Screen screen;
-    private List<Drawable> roots = new ArrayList<>();
-    private Camera camera;
+    private final Terminal terminal;
+    private final Screen screen;
+    private final List<Drawable> roots = new ArrayList<>();
+    private final Camera camera;
 
     private Instant timestamp;
 
-    public Engine(){
+    public Engine() {
         try {
             this.terminal = new DefaultTerminalFactory(System.out, System.in, StandardCharsets.UTF_8).createTerminal();
             this.screen = new TerminalScreen(terminal);
             this.timestamp = Instant.now();
             Point rb = getTerminalSize();
-            this.camera = new Camera(this,0, 0, rb.getX(), rb.getY());
+            this.camera = new Camera(this, 0, 0, rb.getX(), rb.getY());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -51,6 +51,7 @@ public class Engine implements Runnable, EntityResolver {
     public void run() {
         try {
             screen.startScreen();
+            roots.stream().filter(root -> root instanceof Controller).map(root -> (Controller) root).filter(ctrl -> !ctrl.getSelection().isEmpty()).forEach(ctrl -> camera.showSelection(ctrl));
             KeyStroke key;
             do {
                 key = screen.pollInput();

@@ -9,7 +9,7 @@ public class EmojiCat extends EmojiObject {
 
     Emoji emoji;
     String name;
-    TextColor color = TextColor.ANSI.GREEN;
+    TextColor color = TextColor.ANSI.GREEN_BRIGHT;
 
     public EmojiCat(String name){
         this.name = name;

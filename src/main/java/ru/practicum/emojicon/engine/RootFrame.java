@@ -23,9 +23,13 @@ public class RootFrame extends AbstractFrame {
         return transparentColorFn != null ? transparentColorFn.apply(getPosX(), getPosY()) : TextColor.ANSI.BLACK;
     }
 
+    public static RootFrame extend(Frame frame) {
+        return (RootFrame) frame.getRoot();
+    }
+
     //set position for painting
-    public void setPosition(int x, int y) {
-        if (x < 0 || x > getRight() || y < 0 || y > getBottom())
+    public void setPosition(int x, int y){
+        if(x < 0 || x > getRight() || y < 0 || y > getBottom())
             throw new IllegalArgumentException("position out of bounds");
 
         setPosX(x);
@@ -63,5 +67,8 @@ public class RootFrame extends AbstractFrame {
 
     public void setTransparentColorFn(BiFunction<Integer, Integer, TextColor> transparentColorFn) {
         this.transparentColorFn = transparentColorFn;
+    }
+    public Screen getScreen() {
+        return screen;
     }
 }

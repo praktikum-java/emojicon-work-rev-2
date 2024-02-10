@@ -41,6 +41,7 @@ public class EmojiHelp implements Drawable {
                 .map(Emoji::getUnicode)
                 .collect(Collectors.joining(""));
         text.putString(0, frame.getBottom(), " " + arrows + " [Ходить]");
+        text.putString(0, frame.getTop(), " [F2/F3 Выкл/Вкл. звук]");
         String escape = " Esc [Выход] ";
         text.putString(frame.getRight() - escape.length() + 1, frame.getBottom(), escape);
 

@@ -7,6 +7,7 @@ import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
+import ru.practicum.emojicon.mod.Soundtrack;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.LineUnavailableException;
 
 public class Engine implements Runnable, EntityResolver {
 
@@ -24,6 +27,7 @@ public class Engine implements Runnable, EntityResolver {
     private final Screen screen;
     private final List<Drawable> roots = new ArrayList<>();
     private final Camera camera;
+    private final Soundtrack soundtrack;
 
     private Instant timestamp;
 
@@ -34,7 +38,10 @@ public class Engine implements Runnable, EntityResolver {
             this.timestamp = Instant.now();
             Point rb = getTerminalSize();
             this.camera = new Camera(this, 0, 0, rb.getX(), rb.getY());
+            this.soundtrack = new Soundtrack("MeowForward.wav");
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedAudioFileException | LineUnavailableException e) {
             throw new RuntimeException(e);
         }
     }
@@ -53,6 +60,7 @@ public class Engine implements Runnable, EntityResolver {
             screen.startScreen();
             roots.stream().filter(root -> root instanceof Controller).map(root -> (Controller) root).filter(ctrl -> !ctrl.getSelection().isEmpty()).forEach(ctrl -> camera.showSelection(ctrl));
             KeyStroke key;
+            soundtrack.play();
             do {
                 key = screen.pollInput();
                 screen.clear();
@@ -75,7 +83,10 @@ public class Engine implements Runnable, EntityResolver {
                 Thread.sleep(Math.max(0, FRAME_TIME - dt)); //сколько-то времени ушло на кадр
             } while (key == null || !(key.getKeyType().equals(KeyType.Escape)));
             screen.stopScreen();
+            soundtrack.stop();
         } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedAudioFileException | LineUnavailableException e) {
             throw new RuntimeException(e);
         }
     }
@@ -83,6 +94,18 @@ public class Engine implements Runnable, EntityResolver {
     private void handleEngineKey(KeyStroke key) throws IOException {
         if (key == null)
             return;
+
+        if (key.getKeyType().equals(KeyType.F2)) {
+            soundtrack.pause();
+        }
+
+        if (key.getKeyType().equals(KeyType.F3)) {
+            try{
+                soundtrack.resume();
+            } catch (UnsupportedAudioFileException | LineUnavailableException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         if (key.getKeyType().equals(KeyType.Character) && key.getCharacter().equals(' ')) {
             terminal.bell();
